@@ -1,0 +1,49 @@
+﻿<docs>
+		<author>
+			<para>
+				<c>Author: Salvatore Amaddio R.</c>
+			</para>
+		</author>
+
+		<searchFilter>
+			See also the <see cref="SearchFilter"/> method.
+		</searchFilter>
+
+	<searchProp>
+		See also the <see cref="Search"/> property.
+	</searchProp>
+
+
+	<recordsOrganizer>
+		See also the <see cref="AbstractRecordsOrganizer"/> class.
+	</recordsOrganizer>
+	
+	<isDirtyProp>
+		See also the <see cref="IsDirty"/> property.
+	</isDirtyProp>
+	
+	<simpleSearchExample>
+	<code>
+	if (e.PropIs(nameof(Search)))
+	{
+	   if (e.NewValueIsNull) return;
+	   string? val = e.GetNewValue()?.ToString()?.ToLower();
+	   var range = MainSource.Where(s => SearchFilter(s, val), false);
+	   ChildSource.ReplaceData(range);
+	   SelectedRecord = ChildSource.FirstOrDefault();
+	}
+	</code>		
+	</simpleSearchExample>
+
+	<recordOrganizerSearch>
+	<code>
+	if (e.PropIs(nameof(Search)))
+	{
+		if (e.NewValueIsNull) return;
+		AccountHolderRecordOrganiser.Requery();
+		SelectedRecord = ChildSource.FirstOrDefault();
+		return;
+	}
+	</code>
+	</recordOrganizerSearch>
+</docs>

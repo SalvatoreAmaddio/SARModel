@@ -1,0 +1,18 @@
+{
+  "Name": "GB",
+  "DisplayName": "Y Deyrnas Unedig",
+  "EnglishName": "United Kingdom",
+  "NativeName": "Y Deyrnas Unedig",
+  "ISO_3": "GBR",
+  "ISO": "GB",
+  "WinISO": "GBR",
+  "CountryID": 242,
+  "Currency": {
+    "CurrencySymbol": "\u00A3",
+    "CurrencyEnglishName": "British Pound",
+    "ISO": "GBP",
+    "CurrencyNativeName": "Punt Prydain",
+    "ID": 1106
+  },
+  "ID": 1106
+}

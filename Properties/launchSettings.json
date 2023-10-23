@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SARModel": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "Author": "Salvatore Amaddio R."
+      }
+    }
+  }
+}

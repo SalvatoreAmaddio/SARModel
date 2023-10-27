@@ -10,7 +10,7 @@
             doc = new(FilePath);
         } 
 
-        public virtual string SoftwareName { get => SoftwareInfo.SoftwareName; }
+        public virtual string? SoftwareName { get => SoftwareInfo.SoftwareName; }
         public virtual string DeveloperName { get => $"{SoftwareInfo.Developer.Name}."; }
         public abstract void Produce();
     }
@@ -67,8 +67,8 @@
     }
     public class ProduceDeploymentFiles
     {
-        ProduceLicenceFile licenceFile;
-        ProduceAfterInstallationFile licenceAfterInstallationFile;
+        private readonly ProduceLicenceFile licenceFile;
+        private readonly ProduceAfterInstallationFile licenceAfterInstallationFile;
         public ProduceDeploymentFiles(SoftwareInfo softwareInfo)
         {
             licenceFile = new(softwareInfo);

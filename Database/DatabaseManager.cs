@@ -6,7 +6,7 @@ namespace SARModel
 {
     public static class DatabaseManager
     {
-        public static Assembly? SQLite;
+        public static Assembly? SQLite { get; set; }
         private static string InstalledPath { get; } = Path.Combine(Sys.FolderPath, "installed.dat");
         public static void CSPROYFile()
         {
@@ -88,18 +88,18 @@ namespace SARModel
             bool status = false;
             if (File.Exists(InstalledPath))
             {
-                using (var stream = File.Open(InstalledPath, FileMode.Open))
-                    using (var reader = new BinaryReader(stream, Encoding.UTF8, false))
-                        status = reader.ReadBoolean();                    
+                using var stream = File.Open(InstalledPath, FileMode.Open);
+                using var reader = new BinaryReader(stream, Encoding.UTF8, false);
+                status = reader.ReadBoolean();
             }
             return status;
         }
 
         private static void WriteDefaultValue()
         {
-            using (var stream = File.Open(InstalledPath, FileMode.Create))
-                using (var writer = new BinaryWriter(stream, Encoding.UTF8, false)) 
-                     writer.Write(true);
+            using var stream = File.Open(InstalledPath, FileMode.Create);
+            using var writer = new BinaryWriter(stream, Encoding.UTF8, false);
+            writer.Write(true);
         }
         public static bool DBExist(string path)=>File.Exists(path);
 
@@ -146,8 +146,8 @@ namespace SARModel
 
         public static async Task FecthDatabaseTablesData()
         {
-                await Parallel.ForEachAsync(DBS, async (db, token) => await Task.WhenAll(db.GetTable()));
-                await Parallel.ForEachAsync(DBS, async (db, token) => await Task.WhenAll(db.SetForeignKeys()));
+            await Parallel.ForEachAsync(DBS, async (db, token) => await db.GetTable());
+            await Parallel.ForEachAsync(DBS, async (db, token) => await Task.WhenAll(db.SetForeignKeys()));
         }
     }
 

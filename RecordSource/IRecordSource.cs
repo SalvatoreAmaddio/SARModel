@@ -32,6 +32,8 @@ namespace SARModel {
         #endregion
         public IRecordSource Copy();
 
+        public object Get(int index);
+
         #region RequeryOptions
         public void Requery();
         public void Refilter();

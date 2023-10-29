@@ -343,6 +343,11 @@ namespace SARModel
         }
         public override bool Equals(object? obj) => obj is RecordSource<M> source && _sourceID == source._sourceID;
         public override int GetHashCode() => HashCode.Combine(_sourceID);
+
+        public object Get(int index)
+        {
+            return this[index];
+        }
         #endregion
     }
 

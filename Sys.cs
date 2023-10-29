@@ -12,6 +12,7 @@ namespace SARModel
     {
         public static string AppLocation { get => AppContext.BaseDirectory; }
 
+        public static string DesktopPath { get=> Environment.GetFolderPath(Environment.SpecialFolder.Desktop); }
         public static string? ProjectName
         {
             get => Assembly.GetEntryAssembly()?.GetName()?.Name?.ToLower();
@@ -25,17 +26,16 @@ namespace SARModel
                 return (string.IsNullOrEmpty(str)) ? "1.0.0.0." : str;
             } 
         }
-
         public static List<AssemblyCollected> DLLs { get; } = new();
         public static string FolderPath { get => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $"{Sys.ProjectName}_version_{Sys.ProjectVersion}"); }
-
+        public static bool FileExists(string? path) => File.Exists(path);
+        public static void DeleteFile(string path) => File.Delete(path);
         static private int VersionIntoNumber(string version) => int.Parse(version.Replace(".", string.Empty));
-
         private static void RemovePreviousVersion(bool isInstalled) 
         {
             if (isInstalled) return;
             string rootFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string criteria = Path.Combine(rootFolder, "betting_version_");
+            string criteria = Path.Combine(rootFolder, $"{Sys.ProjectName}_version_");
             string[] chunks;
             int oldVersion = 0;
             int newVersion = VersionIntoNumber((string.IsNullOrEmpty(Sys.ProjectVersion)) ? "1.0.0.0" : Sys.ProjectVersion);
@@ -46,8 +46,8 @@ namespace SARModel
                 chunks = dir.Split("version_");
                 oldVersion = VersionIntoNumber(chunks[1]);
                 if (newVersion > oldVersion) 
-                { 
-                    
+                {
+                    DeleteFile(dir);                                       
                 }
             }
 
@@ -66,12 +66,12 @@ namespace SARModel
                 if (stream != null)
                 {
                     DLLs.Add(new(name));
-
                     if (!isInstalled)
                         WriteOnDisk(Path.Combine(FolderPath, $"{name}"), ref stream);
                 }
             });
         }
+
         public static void WriteOnDisk(string path, ref Stream stream)
         {
             if (File.Exists(path)) return;
@@ -108,4 +108,8 @@ namespace SARModel
         }
     }
 
+    public class DateFormat : IFormatProvider
+    {
+        public object? GetFormat(Type? formatType) => formatType?.ToString();
+    }
 }

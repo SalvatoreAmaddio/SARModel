@@ -8,6 +8,23 @@
         public string PhoneNumber { get; } = "+44 07561 049295";
         public override string ToString() => $"Developer: {Name}. e-mail: {Email}. Phone Number: {PhoneNumber}";
     }
+
+    /// <summary>
+    /// Provides a set of information about this software.
+    /// <br/>
+    /// Here some tips:
+    /// <code>
+    ///  public partial class MainWindow : Window
+    /// {
+    ///    public SoftwareInfo Software { get; set; } = new(TheClientName, TheYear);
+    ///    
+    ///    public MainWindow() {...}
+    ///    ...
+    ///    ...
+    /// }
+    /// </code>
+    /// <include file="Docs.xml" path="docs/author"/>
+    /// </summary>
     public class SoftwareInfo
     {
         #region Properties

@@ -12,6 +12,19 @@ namespace SARModel
         public Type ModelType { get; }
 
         /// <summary>
+        /// This property manages the Form Progress Bar. If True the bar is running.<br/>
+        /// When running long tasks, you might need to use <c>await Task.Run(function)</c>. The function should return False or Task&lt;false><br/>
+        /// to stop the Progress Bar from keep running.
+        /// <para>For Example:</para>
+        /// <code>
+        /// IsLoading = true; &lt;--- Progress Bar starts running
+        /// IsLoading = await Task.Run(aFunction); &lt;--- Progress Bar stops running when the funcion completes.
+        /// </code>
+        /// <include file="Docs.xml" path="docs/author"/>
+        /// </summary>
+        public bool IsLoading { get; set; }
+
+        /// <summary>
         /// This property tells if any record in the RecordSource has had changes and was not yet saved.
         /// <include file="Docs.xml" path="docs/author"/>
         /// </summary>
@@ -139,6 +152,51 @@ namespace SARModel
         /// <include file='Docs.xml' path='docs/author'/>
         /// </summary>
         public static virtual bool SearchFilter(object? record, string? criteria) => throw new NotImplementedException();
-    }
 
+        public static Task<Excel> CallExcel(OfficeFileMode mode, string path) => throw new NotImplementedException();
+
+        /// <summary>
+        /// When overriden, you can implement your own logic to deal with Office Applications.<br/>
+        /// You might need to add this to the Tab Control:
+        /// <code>
+        /// private void ExcelMenuItemClick(object sender, RoutedEventArgs e) =>
+        /// Tab.GetTabView().Controller.RunOffice(OfficeApplication.EXCEL);
+        /// </code>
+        /// Also override this method in your controller and implement a logic:<br/>
+        /// For Example:
+        /// <code>
+        /// IsLoading = true;
+        /// IsLoading = await Task.Run(() =>
+        ///     WriteExcel(fileMode, path, (excel) =>
+        ///     { 
+        ///       //Styles here
+        ///     }));
+        /// </code>
+        /// <include file='Docs.xml' path='docs/author'/><br/>
+        /// See the <see cref="TableRange.Style(string, Style)"/> method.
+        /// </summary>
+        /// <param name="officeApp">Enum</param>
+        public abstract void RunOffice(OfficeApplication officeApp);
+
+        /// <summary>
+        /// This Task organises the data to be printed onto a spreadsheet into a 2D object Array.<br/>
+        /// For Example:
+        /// <code>
+        /// object?[,] data = GenerateDataTable("COL1", "COL2", ... ,"COLN"),
+        /// Parallel.For(0, ChildSource.RecordCount, (row) =>
+        /// {
+        ///     Model record = (Model)ChildSource.Get(row);
+        ///     int r = row + 1;
+        ///     data[r, 0] = record.Field1;
+        ///     data[r, 1] = record.Field2;
+        ///     ...
+        ///     data[r, n] = record.FieldN;
+        /// });
+        /// return Task.FromResult(data);
+        /// </code>
+        /// <include file='Docs.xml' path='docs/author'/>
+        /// </summary>
+        /// <returns>A 2D object Array Task</returns>
+        public abstract Task<object?[,]> OrganiseExcelData();
+    }
 }

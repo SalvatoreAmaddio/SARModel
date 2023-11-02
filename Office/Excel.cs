@@ -240,8 +240,9 @@ namespace SARModel
         #endregion
 
         #region Writing
-        public void WriteTable(object[,] data) 
+        public void WriteTable(object[,]? data) 
         {
+            if (data == null) throw new ArgumentNullException("Data is null");
             WriteData(data, 1);
             SelectRange(new SpreadsheetCell(1,1), new SpreadsheetCell(data.GetLength(1),1));
             if (Rng == null) throw new NullRangeEx();

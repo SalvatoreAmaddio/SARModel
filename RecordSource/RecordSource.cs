@@ -12,12 +12,12 @@ namespace SARModel
         private RecordMovingEvtArgs RecordMovingArgs = new ();
         private readonly StringBuilder sb = new();
         private List<IRecordSource> Children { get; } = new();
-        int lastIndex { get => (Count == 0) ? -1 : Count - 1; }
+        private int LastIndex => (Count == 0) ? -1 : Count - 1;
         private static long Id;
         private long _sourceID;
         private IRecordsOrganizer? _filter;
         private string _recordsPositionDisplayer=string.Empty;
-        bool CanGoNext { get=> CurrentPosition != lastIndex && !IsNewRecord; }
+        bool CanGoNext { get=> CurrentPosition != LastIndex && !IsNewRecord; }
         bool CanGoNew { get => (AllowNewRecord && !IsNewRecord) || (AllowNewRecord && !HasMoved); }
         private M _currentRecord = new();
         private M Current
@@ -41,6 +41,7 @@ namespace SARModel
             get=> _recordsPositionDisplayer; 
             set=> _recordsPositionDisplayer=value; 
         }
+
         public IRecordsOrganizer? Filter 
         { 
             get=>_filter;
@@ -55,7 +56,7 @@ namespace SARModel
         public int RecordCount { get => Count; }
         public int CurrentPosition { get=> (Current == null) ? -1 : IndexOf(Current); }
         public bool IsBOF { get => RecordCount>=0 && CurrentPosition==0; }
-        public bool IsEOF { get => RecordCount >= 0 && CurrentPosition == lastIndex && !IsEmpty; }
+        public bool IsEOF { get => RecordCount >= 0 && CurrentPosition == LastIndex && !IsEmpty; }
         public bool HasMoved { get => IsBOF != IsEOF; }
         public bool IsNewRecord { get => Current != null && Current.IsNewRecord; }
         public bool IsEmpty { get => RecordCount == 0 && CurrentPosition < 0; }
@@ -116,7 +117,6 @@ namespace SARModel
         }
         #endregion
 
-        public IRecordSource Copy()=> new RecordSource<M>(this);
 
         #region Linq
         public IEnumerable<TS> Where<TS>(Func<TS, bool> predicate,bool replace=true) where TS : IAbstractModel
@@ -145,10 +145,19 @@ namespace SARModel
         {           
             var result = (order.Equals(SourceOrder.ASC)) ? this.Cast<TS>().OrderBy(predicate) : this.Cast<TS>().OrderByDescending(predicate);
             var list = result.ToList();
-            ReplaceData(list);
+            if (replace) ReplaceData(list);
             return result;
         }
         #endregion
+
+        public IRecordSource Copy() => new RecordSource<M>(this);
+
+        public object Get(int index) => this[index];
+        public void SetFilter(IRecordsOrganizer recordsOrganizer) 
+        {
+            recordsOrganizer.SourceID = SourceID;
+            Filter = recordsOrganizer;
+        }
 
         #region CurrentRecord
         public IAbstractModel CurrentRecord() => Current;
@@ -276,7 +285,7 @@ namespace SARModel
         {
             if (RecordCount == 0 || !MovementAllowed(RecordMovement.LAST)) return false;
             if (Current.IsNewRecord) Remove(Current);
-            Current = this[lastIndex];
+            Current = this[LastIndex];
             OnRecordMoved?.Invoke(this, new(Current, RecordMovement.LAST));
             return true;
         }
@@ -343,11 +352,6 @@ namespace SARModel
         }
         public override bool Equals(object? obj) => obj is RecordSource<M> source && _sourceID == source._sourceID;
         public override int GetHashCode() => HashCode.Combine(_sourceID);
-
-        public object Get(int index)
-        {
-            return this[index];
-        }
         #endregion
     }
 

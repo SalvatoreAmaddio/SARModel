@@ -79,7 +79,7 @@ namespace SARModel
         public static AbstractDatabaseTable<M> GetDatabaseTable<M>() where M : AbstractTableModel<M>, new()
         {
             IDB? db = DBS.FirstOrDefault(s => s.ModelType.Name.Equals(typeof(M).Name));
-            return (AbstractDatabaseTable<M>?)db ?? throw new Exception($"XXX {typeof(M).Name} DB NOT FOUND");
+            return (AbstractDatabaseTable<M>?)db ?? throw new DBNotFoundException(typeof(M).Name,DBS);
         }
 
         public static async Task FecthDatabaseTablesData()

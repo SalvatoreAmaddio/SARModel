@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿
+using System.Collections;
 
 namespace SARModel {
     public interface IRecordSource : IEnumerable<IAbstractModel>, IEnumerable {
@@ -31,7 +32,7 @@ namespace SARModel {
         public void SetCurrentRecord(IAbstractModel? record);
         #endregion
         public IRecordSource Copy();
-
+        public void SetFilter(IRecordsOrganizer recordsOrganizer);
         public object Get(int index);
 
         #region RequeryOptions
@@ -72,13 +73,27 @@ namespace SARModel {
         public event EventHandler<RecordMovedEvtArgs>? OnRecordMoved;
         public event EventHandler<RecordMovingEvtArgs>? OnRecordMoving;
         #endregion
+
+        public static RecordSource<T> InitSource<T>() where T : AbstractTableModel<T>, new() 
+        {
+            RecordSource<T> source = new((IEnumerable<T>)DatabaseManager.GetDatabaseTable<T>().DataSource);
+            DatabaseManager.AddChild<T>(source);
+            return source;
+        }
     }
-    public abstract class AbstractRecordsOrganizer : IRecordsOrganizer
+    public abstract class AbstractRecordsOrganizer<M> : IRecordsOrganizer where M : AbstractTableModel<M>, new()
     {
         #region Properties
         public long SourceID { get; set; }
-        protected abstract IRecordSource OriginalSource { get; }
+
+        /// <summary>
+        /// <code>
+        /// OriginalSource => DatabaseManager.GetDatabaseTable&#x3c;objectToLookTo>().DataSource;
+        /// </code>
+        /// </summary>
+        protected virtual IRecordSource OriginalSource => DatabaseManager.GetDatabaseTable<M>().DataSource;
         public object? SelectedItem { get; set; }
+        public bool SelectFirst { get; set; } = false;
         private object? DataContext { get; set; }
         #endregion
 
@@ -97,7 +112,7 @@ namespace SARModel {
         #region AbstractMethods
         public abstract bool FilterCriteria(IAbstractModel record);
         public virtual void OnFilter(IRecordSource FilteredSource) => FilteredSource.ReplaceData(OriginalSource.Where(FilterCriteria));
-        public abstract void OnReorder(IRecordSource FilteredSource);
+        public virtual void OnReorder(IRecordSource FilteredSource) => FilteredSource.ReplaceData(FilteredSource.OrderBy(s => s.ToString()));
         #endregion
 
         #region Methods
@@ -112,6 +127,8 @@ namespace SARModel {
             FilteredSource.Filter = this;
             OnFilter(FilteredSource);
             OnReorder(FilteredSource);
+            if (SelectFirst) SelectedItem = FilteredSource.First();
+            else SelectedItem = null;
         }
 
         public M? GetDataContext<M>() => (M?)DataContext;
@@ -122,25 +139,38 @@ namespace SARModel {
     public interface IRecordsOrganizer
     {
         public long SourceID { get; set; }
+        public object? SelectedItem { get; set; }
+
+        /// <summary>
+        /// <code>
+        /// Model? dataContext = GetDataContext&#x3c;Model>(); //object to filter by
+        /// return OriginalSource.Any&#x3c;OriginalSourceModel>(s=>(your condition));
+        /// </code>
+        /// </summary>
+        /// <param name="record"></param>
+        /// <returns></returns>
         public bool FilterCriteria(IAbstractModel record);
         public void OnFilter(IRecordSource FilteredSource);
+
+        /// <summary>
+        /// return FilteredSource.ReplaceData(FilteredSource.OrderBy(s => s.ToString()));
+        /// </summary>
+        /// <param name="source"></param>
         public void OnReorder(IRecordSource source);
         public void Run();
         public M? GetDataContext<M>();
         public void SetDataContext(object _dataContext);
         public void Requery();
 
+        public IRecordSource GetOrganisedSource();
+
         public event EventHandler<RequeryEventArgs>? OnRequery;
     }
 
     public class RequeryEventArgs : EventArgs
     {
-        object Source { get; set; }
-
-        public RequeryEventArgs(object _source) 
-        { 
-            Source= _source;
-        }
+        private object Source { get; set; }
+        public RequeryEventArgs(object source) =>Source = source;
     }
 
     #region Enums
